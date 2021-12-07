@@ -93,7 +93,7 @@ impl Backoff {
     /// ```
     #[inline]
     pub fn new() -> Self {
-        Backoff { step: Cell::new(0) }
+        Backoff { step: Cell::new(YIELD_LIMIT) }
     }
 
     /// Resets the `Backoff`.
@@ -108,7 +108,7 @@ impl Backoff {
     /// ```
     #[inline]
     pub fn reset(&self) {
-        self.step.set(0);
+        self.step.set(YIELD_LIMIT);
     }
 
     /// Backs off in a lock-free loop.
@@ -221,9 +221,6 @@ impl Backoff {
                 #[allow(deprecated)]
                 atomic::spin_loop_hint();
             }
-
-            #[cfg(feature = "std")]
-            ::std::thread::yield_now();
         }
 
         if self.step.get() <= YIELD_LIMIT {
